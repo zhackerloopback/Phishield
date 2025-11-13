@@ -57,7 +57,7 @@ Phishield/
 ### 1. Clone the repository
 
 ```
-git clone https://github.com/your-username/Phishield.git
+git clone https://github.com/zhackerloopback/Phishield.git
 cd Phishield
 ```
 
@@ -121,7 +121,7 @@ Model is trained on:
 Output Model File:
 
 ```
-model.pkl
+Phishing_model.pkl
 ```
 
 ## Deployment Guide
