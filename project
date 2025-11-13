@@ -1,0 +1,8 @@
+project/
+├─ app.py
+├─ ml_model.py
+├─ data_preprocessing.py
+└─ templates/
+   ├─ index.html
+   ├─ awareness.html
+   └─ statistics.html
