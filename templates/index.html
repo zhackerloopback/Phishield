@@ -104,6 +104,21 @@
       box-shadow: 0 0 12px rgba(32, 201, 151, 0.9);
     }
 
+    /* simple nav links (Detector / Awareness / Statistics) */
+    .nav-link-simple {
+      font-size: 0.85rem;
+      text-decoration: none;
+      opacity: 0.85;
+      transition: opacity 0.2s ease;
+    }
+    .nav-link-simple:hover {
+      opacity: 1;
+    }
+    .nav-link-simple.active {
+      font-weight: 600;
+      opacity: 1;
+    }
+
     .hero-wrapper {
       flex: 1;
       display: flex;
@@ -641,9 +656,14 @@
         <span class="ms-1 text-secondary" style="font-size: 0.8rem;">/ URL Intel</span>
       </a>
 
-      <button id="themeToggle" class="btn btn-sm btn-outline-light">
-        ☀ Light mode
-      </button>
+      <div class="d-flex align-items-center ms-auto" style="gap: 0.75rem;">
+        <a href="/" class="nav-link-simple active">Detector</a>
+        <a href="/gourav-project/Phishield/templates/awareness.html" class="nav-link-simple">Awareness</a>
+        <a href="/gourav-project/Phishield/templates/statistics.html" class="nav-link-simple">Statistics</a>
+        <button id="themeToggle" class="btn btn-sm btn-outline-light">
+          ☀ Light mode
+        </button>
+      </div>
     </div>
   </nav>
 
