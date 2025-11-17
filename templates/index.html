@@ -417,6 +417,57 @@
       border-top-color: rgba(173, 181, 189, 0.9);
     }
 
+    /* Extra UI under result */
+    #whyText {
+      font-size: 0.78rem;
+    }
+
+    body[data-theme="dark"] #whyText {
+      color: #adb5bd;
+    }
+
+    body[data-theme="light"] #whyText {
+      color: #6c757d;
+    }
+
+    /* History table */
+    #historySection h6 {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 0.4rem;
+    }
+
+    .history-table {
+      font-size: 0.78rem;
+    }
+
+    body[data-theme="dark"] .history-table thead {
+      color: #dee2e6;
+    }
+
+    body[data-theme="light"] .history-table thead {
+      color: #495057;
+    }
+
+    .history-table tbody tr {
+      cursor: pointer;
+    }
+
+    .history-table tbody tr:hover {
+      background-color: rgba(13, 110, 253, 0.06);
+    }
+
+    body[data-theme="light"] .history-table tbody tr:hover {
+      background-color: rgba(13, 110, 253, 0.04);
+    }
+
+    .history-badge {
+      font-size: 0.7rem;
+      border-radius: 999px;
+      padding: 0.15rem 0.5rem;
+    }
+
     /* Side info column */
     .side-panel {
       height: 100%;
@@ -545,6 +596,27 @@
       border-radius: 999px;
     }
 
+    /* Sample URL chips */
+    .sample-chip {
+      font-size: 0.75rem;
+      border-radius: 999px;
+      padding: 0.15rem 0.6rem;
+      cursor: pointer;
+      border: 1px dashed rgba(108, 117, 125, 0.7);
+    }
+
+    body[data-theme="light"] .sample-chip {
+      border-color: rgba(173, 181, 189, 0.9);
+    }
+
+    .sample-chip + .sample-chip {
+      margin-left: 0.25rem;
+    }
+
+    .sample-chip:hover {
+      opacity: 0.9;
+    }
+
     @media (max-width: 991.98px) {
       .hero-card {
         border-radius: 1.1rem;
@@ -581,7 +653,7 @@
       <div class="col-lg-10 col-xl-9">
         <div class="hero-card shadow-lg">
           <div class="row g-0">
-            <!-- Left panel: form + result -->
+            <!-- Left panel: form + result + history -->
             <div class="col-lg-7">
               <div class="card-header-custom">
                 <div class="badge-chip">
@@ -618,11 +690,20 @@
                     </div>
                   </div>
 
-                  <button type="submit" id="submitBtn" class="btn btn-primary">
-                    <span class="btn-icon">⚡</span>
-                    Check URL
-                  </button>
-                  <span id="loading" class="ms-2" style="display:none;">Analysing…</span>
+                  <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                    <button type="submit" id="submitBtn" class="btn btn-primary">
+                      <span class="btn-icon">⚡</span>
+                      Check URL
+                    </button>
+                    <span id="loading" style="display:none;">Analysing…</span>
+                  </div>
+
+                  <div class="d-flex flex-wrap align-items-center" style="gap: 0.4rem; font-size: 0.78rem;">
+                    <span style="opacity: 0.8;">Try sample:</span>
+                    <span class="sample-chip text-success">https://www.google.com</span>
+                    <span class="sample-chip text-danger">http://paypa1-login-security.com</span>
+                    <span class="sample-chip text-warning">https://secure-update-account.example-login.net</span>
+                  </div>
                 </form>
 
                 <div class="meta-row">
@@ -646,8 +727,44 @@
                     <h5 id="resultTitle" class="mb-1"></h5>
                     <p id="resultDetails" class="mb-2"></p>
                     <div id="featureAnalysis"></div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap" style="gap: 0.4rem;">
+                      <small id="whyText"></small>
+                      <button type="button" id="copyReportBtn" class="btn btn-sm btn-outline-secondary">
+                        Copy report
+                      </button>
+                    </div>
                   </div>
                 </div>
+
+                <!-- History -->
+                <div id="historySection" class="mt-3" style="display:none;">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h6 class="mb-0">Recent scans</h6>
+                    <button type="button" id="clearHistoryBtn" class="btn btn-sm btn-outline-secondary" style="font-size: 0.7rem;">
+                      Clear history
+                    </button>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-borderless history-table mb-0">
+                      <thead>
+                        <tr>
+                          <th scope="col">URL</th>
+                          <th scope="col">Result</th>
+                          <th scope="col">Risk</th>
+                          <th scope="col">Conf.</th>
+                          <th scope="col">Time</th>
+                        </tr>
+                      </thead>
+                      <tbody id="historyTableBody">
+                      </tbody>
+                    </table>
+                  </div>
+                  <small class="d-block mt-1" style="opacity:0.75;">
+                    Tip: Kisi row pe click karke URL ko wapas load kar sakte ho.
+                  </small>
+                </div>
+
               </div>
             </div>
 
@@ -712,9 +829,21 @@
     const resultTitle = document.getElementById('resultTitle');
     const resultDetails = document.getElementById('resultDetails');
     const featureAnalysis = document.getElementById('featureAnalysis');
+    const whyText = document.getElementById('whyText');
+    const copyReportBtn = document.getElementById('copyReportBtn');
+
+    const historySection = document.getElementById('historySection');
+    const historyTableBody = document.getElementById('historyTableBody');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
     const themeToggleBtn = document.getElementById('themeToggle');
     const body = document.body;
+
+    const sampleChips = document.querySelectorAll('.sample-chip');
+
+    let lastResult = null;
+    let lastFeatures = null;
+    let lastUrl = null;
 
     // THEME HANDLING
     function applyTheme(theme) {
@@ -732,7 +861,6 @@
       }
     }
 
-    // Initialize theme: localStorage -> system -> default dark
     (function initTheme() {
       const stored = localStorage.getItem('phishing_theme');
       if (stored === 'light' || stored === 'dark') {
@@ -750,7 +878,15 @@
       applyTheme(next);
     });
 
-    // Existing logic
+    // SAMPLE CHIPS (prefill URL)
+    sampleChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        input.value = chip.textContent.trim();
+        input.classList.remove('is-invalid');
+      });
+    });
+
+    // UTIL FUNCTIONS
     function toTitleCase(str) {
       return str
         .replace(/_/g, ' ')
@@ -771,6 +907,201 @@
       loadingEl.style.display = isLoading ? 'inline' : 'none';
     }
 
+    function formatTimestamp(ts) {
+      const d = new Date(ts);
+      if (Number.isNaN(d.getTime())) return '';
+      return d.toLocaleString(undefined, {
+        year: '2-digit',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    // HISTORY HANDLING (localStorage)
+    const HISTORY_KEY = 'phishing_history';
+
+    function loadHistory() {
+      try {
+        const raw = localStorage.getItem(HISTORY_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function saveHistory(list) {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(list.slice(0, 20)));
+    }
+
+    function renderHistory(list) {
+      historyTableBody.innerHTML = '';
+      if (!list.length) {
+        historySection.style.display = 'none';
+        return;
+      }
+
+      list.forEach((item, idx) => {
+        const tr = document.createElement('tr');
+        tr.dataset.index = idx;
+
+        const urlTd = document.createElement('td');
+        urlTd.textContent = item.url || '';
+
+        const resTd = document.createElement('td');
+        const badge = document.createElement('span');
+        badge.className = 'history-badge ' +
+          (item.is_phishing ? 'bg-danger text-white' : 'bg-success text-white');
+        badge.textContent = item.is_phishing ? 'Phishing' : 'Safe';
+        resTd.appendChild(badge);
+
+        const riskTd = document.createElement('td');
+        riskTd.textContent = item.risk_level || '';
+
+        const confTd = document.createElement('td');
+        confTd.textContent = typeof item.confidence === 'number'
+          ? (item.confidence * 100).toFixed(1) + '%'
+          : '';
+
+        const timeTd = document.createElement('td');
+        timeTd.textContent = formatTimestamp(item.ts);
+
+        tr.append(urlTd, resTd, riskTd, confTd, timeTd);
+        historyTableBody.appendChild(tr);
+      });
+
+      historySection.style.display = 'block';
+    }
+
+    function addToHistory(entry) {
+      const list = loadHistory();
+      list.unshift(entry);
+      saveHistory(list);
+      renderHistory(list);
+    }
+
+    function clearHistory() {
+      localStorage.removeItem(HISTORY_KEY);
+      renderHistory([]);
+    }
+
+    // On load, render existing history
+    renderHistory(loadHistory());
+
+    // Click on history row -> load URL back to input
+    historyTableBody.addEventListener('click', (e) => {
+      const tr = e.target.closest('tr');
+      if (!tr) return;
+      const idx = tr.dataset.index;
+      const list = loadHistory();
+      if (!list[idx]) return;
+      input.value = list[idx].url || '';
+      input.classList.remove('is-invalid');
+      input.focus();
+    });
+
+    clearHistoryBtn.addEventListener('click', () => {
+      if (confirm('Clear all URL scan history?')) {
+        clearHistory();
+      }
+    });
+
+    // “Why this verdict?” explanation
+    function buildWhyText(result, features) {
+      if (!result) return '';
+
+      const explanations = [];
+      const isPhish = !!result.is_phishing;
+      const riskLevel = (result.risk_level || '').toLowerCase();
+
+      if (isPhish) {
+        if (riskLevel === 'high') {
+          explanations.push('High risk: multiple phishing indicators detect hue.');
+        } else if (riskLevel === 'medium') {
+          explanations.push('Medium risk: kuch suspicious patterns detect hue.');
+        } else {
+          explanations.push('Suspicious: model ne is URL ko phishing side ki taraf lean karte hue mark kiya.');
+        }
+      } else {
+        explanations.push('Low risk: URL ko model ne relatively safe classify kiya hai.');
+      }
+
+      // Feature-based hints (optional, only if present)
+      if (features) {
+        const f = features;
+
+        const hints = [];
+
+        if (f.has_ip_in_domain || f.uses_ip) {
+          hints.push('Domain me IP address use ho raha hai.');
+        }
+        if (Number(f.url_length) && Number(f.url_length) > 80) {
+          hints.push('URL ka length kaafi lamba hai.');
+        }
+        if (Number(f.num_digits) && Number(f.num_digits) > 5) {
+          hints.push('URL me bahut saare digits use hue hain.');
+        }
+        if (Number(f.num_special_chars) && Number(f.num_special_chars) > 5) {
+          hints.push('URL me zyada special characters hain.');
+        }
+        if (f.has_suspicious_tld) {
+          hints.push('TLD suspicious category me aa raha hai.');
+        }
+        if (f.shortened_url) {
+          hints.push('Shortened URL service detect hui (jaise bit.ly / tinyurl).');
+        }
+
+        if (hints.length) {
+          explanations.push('Indicators: ' + hints.join(' '));
+        }
+      }
+
+      return explanations.join(' ');
+    }
+
+    // Copy report as plaintext
+    function buildReportText(url, result, features) {
+      if (!result) return 'No result available. Run a scan first.';
+      const lines = [];
+      lines.push('Phishing Shield – URL Scan Report');
+      lines.push('----------------------------------');
+      lines.push('URL: ' + (url || ''));
+      lines.push('Result: ' + (result.is_phishing ? 'PHISHING' : 'SAFE'));
+      const conf = typeof result.confidence === 'number'
+        ? (result.confidence * 100).toFixed(2) + '%'
+        : 'N/A';
+      lines.push('Confidence: ' + conf);
+      lines.push('Risk Level: ' + (result.risk_level || 'N/A'));
+      lines.push('Timestamp: ' + new Date().toLocaleString());
+      lines.push('');
+      lines.push('Why this verdict:');
+      lines.push(buildWhyText(result, features) || 'N/A');
+      lines.push('');
+      if (features && Object.keys(features).length) {
+        lines.push('Top features:');
+        Object.entries(features).forEach(([k, v]) => {
+          lines.push(' - ' + toTitleCase(k) + ': ' + String(v));
+        });
+      } else {
+        lines.push('No feature details returned from backend.');
+      }
+      return lines.join('\n');
+    }
+
+    copyReportBtn.addEventListener('click', async () => {
+      try {
+        const txt = buildReportText(lastUrl, lastResult, lastFeatures);
+        await navigator.clipboard.writeText(txt);
+        alert('Report copied to clipboard.');
+      } catch (err) {
+        alert('Failed to copy report: ' + (err?.message || err));
+      }
+    });
+
+    // FORM SUBMIT
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -788,6 +1119,11 @@
       featureAnalysis.innerHTML = '';
       resultTitle.textContent = '';
       resultDetails.textContent = '';
+      whyText.textContent = '';
+
+      lastResult = null;
+      lastFeatures = null;
+      lastUrl = url;
 
       try {
         const response = await fetch('/check-url', {
@@ -809,6 +1145,9 @@
 
         const result = data.result || {};
         const features = data.features || {};
+
+        lastResult = result;
+        lastFeatures = features;
 
         if (result.is_phishing) {
           resultAlert.className = 'alert alert-danger';
@@ -848,7 +1187,20 @@
         });
 
         featureAnalysis.appendChild(list);
+
+        // Why text
+        whyText.textContent = buildWhyText(result, features);
+
         resultDiv.style.display = 'block';
+
+        // Add to history
+        addToHistory({
+          url,
+          is_phishing: !!result.is_phishing,
+          risk_level: result.risk_level || '',
+          confidence: typeof result.confidence === 'number' ? result.confidence : null,
+          ts: Date.now()
+        });
 
       } catch (err) {
         alert('Error checking URL: ' + (err?.message || err));
