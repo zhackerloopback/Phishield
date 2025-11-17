@@ -1,21 +1,552 @@
+<!-- templates/statistics.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Phishing Statistics</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scan Statistics · Phishing Shield</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --bg-gradient-dark: radial-gradient(circle at top, #1f85ff 0, #050816 45%, #02010b 100%);
+      --bg-light: #f5f7fb;
+
+      --card-bg-dark: rgba(10, 15, 30, 0.9);
+      --card-bg-light: #ffffff;
+
+      --text-dark-main: #f8f9fa;
+      --text-dark-muted: #adb5bd;
+      --text-light-main: #212529;
+      --text-light-muted: #6c757d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    body[data-theme="dark"] {
+      background: var(--bg-gradient-dark);
+      color: var(--text-dark-main);
+    }
+    body[data-theme="light"] {
+      background: var(--bg-light);
+      color: var(--text-light-main);
+    }
+
+    .navbar {
+      backdrop-filter: blur(10px);
+      transition: background 0.25s ease, border-color 0.25s ease;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    body[data-theme="dark"] .navbar {
+      background: rgba(5, 10, 25, 0.95) !important;
+      border-bottom-color: rgba(255, 255, 255, 0.06);
+    }
+    body[data-theme="light"] .navbar {
+      background: rgba(255, 255, 255, 0.96) !important;
+      border-bottom-color: rgba(0, 0, 0, 0.07);
+    }
+
+    .navbar-brand {
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .logo-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: #20c997;
+      box-shadow: 0 0 12px rgba(32, 201, 151, 0.9);
+    }
+
+    .nav-link-simple {
+      font-size: 0.85rem;
+      text-decoration: none;
+      opacity: 0.85;
+    }
+    .nav-link-simple.active {
+      font-weight: 600;
+      opacity: 1;
+    }
+
+    #themeToggle {
+      font-size: 0.8rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+    }
+
+    .page-wrapper {
+      flex: 1;
+      padding: 3rem 1rem;
+    }
+
+    .stats-layout {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .card-main {
+      border-radius: 1.25rem;
+      padding: 1.75rem 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+      overflow: hidden;
+    }
+    body[data-theme="dark"] .card-main {
+      background: rgba(9, 12, 26, 0.96);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+    body[data-theme="light"] .card-main {
+      background: #ffffff;
+      border-color: rgba(0, 0, 0, 0.07);
+    }
+    .card-main::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at top left, rgba(13, 110, 253, 0.12), transparent 55%),
+        radial-gradient(circle at bottom right, rgba(32, 201, 151, 0.08), transparent 55%);
+      opacity: 0.8;
+    }
+    .card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-header {
+      margin-bottom: 1.2rem;
+    }
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+    .section-subtitle {
+      font-size: 0.85rem;
+    }
+    body[data-theme="dark"] .section-subtitle {
+      color: var(--text-dark-muted);
+    }
+    body[data-theme="light"] .section-subtitle {
+      color: var(--text-light-muted);
+    }
+
+    .stat-number {
+      font-size: 1.6rem;
+      font-weight: 600;
+    }
+    .stat-label {
+      font-size: 0.85rem;
+    }
+
+    .muted {
+      font-size: 0.78rem;
+    }
+    body[data-theme="dark"] .muted { color: var(--text-dark-muted); }
+    body[data-theme="light"] .muted { color: var(--text-light-muted); }
+
+    .progress {
+      height: 0.6rem;
+      border-radius: 999px;
+      overflow: hidden;
+      background-color: rgba(108, 117, 125, 0.25);
+    }
+
+    .history-table {
+      font-size: 0.78rem;
+    }
+    .history-table tbody tr {
+      cursor: default;
+    }
+
+    .badge-small {
+      font-size: 0.7rem;
+      border-radius: 999px;
+      padding: 0.15rem 0.55rem;
+    }
+
+    footer {
+      padding: 0.7rem 1.5rem 1rem;
+      font-size: 0.75rem;
+      text-align: center;
+    }
+    body[data-theme="dark"] footer { color: var(--text-dark-muted); }
+    body[data-theme="light"] footer { color: var(--text-light-muted); }
+
+    @media (max-width: 768px) {
+      .card-main {
+        padding: 1.5rem 1.25rem;
+      }
+    }
+  </style>
 </head>
-<body>
-  <div class="container mt-5">
-    <h1>Statistics</h1>
-    <div class="card mt-3">
-      <div class="card-body">
-        <p><strong>Total Checked:</strong> {{ stats.total_checked }}</p>
-        <p><strong>Phishing Detected:</strong> {{ stats.phishing_detected }}</p>
-        <p><strong>Accuracy Rate:</strong> {{ stats.accuracy_rate }}%</p>
-        <p><strong>Common Targets:</strong> {{ stats.common_targets | join(', ') }}</p>
+<body data-theme="dark">
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <span class="logo-dot"></span>
+        Phishing Shield
+        <span class="ms-1 text-secondary" style="font-size: 0.8rem;">/ Statistics</span>
+      </a>
+
+      <div class="d-flex align-items-center ms-auto" style="gap: 0.75rem;">
+        <a href="/" class="nav-link-simple">Detector</a>
+        <a href="/awareness" class="nav-link-simple">Awareness</a>
+        <a href="/statistics" class="nav-link-simple active">Statistics</a>
+        <button id="themeToggle" class="btn btn-sm btn-outline-light">
+          ☀ Light mode
+        </button>
       </div>
     </div>
-  </div>
+  </nav>
+
+  <main class="page-wrapper">
+    <div class="stats-layout">
+      <!-- Overview -->
+      <section class="card-main">
+        <div class="card-inner">
+          <div class="section-header d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+              <div class="section-title">Scan overview</div>
+              <div class="section-subtitle">
+                Ye stats tumhare browser mein save hue <strong>local scan history</strong> par based hain.
+              </div>
+            </div>
+            <button id="clearHistoryBtn" class="btn btn-sm btn-outline-secondary mt-2 mt-md-0" style="font-size:0.75rem;">
+              Clear all history
+            </button>
+          </div>
+
+          <div id="emptyState" style="display:none;">
+            <p class="muted mb-0">
+              Abhi tak koi URL scan history nahi mili. Pehle
+              <a href="/" class="text-decoration-none">Detector</a> page par kuch URLs scan karo, phir yahan stats dikh jayenge.
+            </p>
+          </div>
+
+          <div id="statsContent" style="display:none;">
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <div>
+                  <div class="stat-number" id="totalScans">0</div>
+                  <div class="stat-label">Total scans</div>
+                  <div class="muted" id="lastScanTime"></div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div>
+                  <div class="stat-number text-danger" id="phishingScans">0</div>
+                  <div class="stat-label">Phishing marked</div>
+                  <div class="muted" id="phishingPercent"></div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div>
+                  <div class="stat-number text-success" id="safeScans">0</div>
+                  <div class="stat-label">Safe marked</div>
+                  <div class="muted" id="safePercent"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Phishing vs Safe bar -->
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <small class="muted">Phishing vs Safe distribution</small>
+                <small class="muted" id="totalLabel"></small>
+              </div>
+              <div class="progress">
+                <div id="phishBar" class="progress-bar bg-danger" style="width:0%"></div>
+                <div id="safeBar" class="progress-bar bg-success" style="width:0%"></div>
+              </div>
+            </div>
+
+            <!-- Risk breakdown -->
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="border rounded-3 p-2">
+                  <div class="d-flex justify-content-between">
+                    <span style="font-size:0.8rem;">High risk</span>
+                    <span class="badge-small bg-danger text-white" id="highCount">0</span>
+                  </div>
+                  <small class="muted" id="highPercent"></small>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="border rounded-3 p-2">
+                  <div class="d-flex justify-content-between">
+                    <span style="font-size:0.8rem;">Medium risk</span>
+                    <span class="badge-small bg-warning text-dark" id="mediumCount">0</span>
+                  </div>
+                  <small class="muted" id="mediumPercent"></small>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="border rounded-3 p-2">
+                  <div class="d-flex justify-content-between">
+                    <span style="font-size:0.8rem;">Low / safe</span>
+                    <span class="badge-small bg-success text-white" id="lowCount">0</span>
+                  </div>
+                  <small class="muted" id="lowPercent"></small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recent scans table -->
+      <section class="card-main">
+        <div class="card-inner">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="section-title" style="font-size:1.1rem;">Recent scans (last 10)</div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-borderless history-table mb-1">
+              <thead>
+                <tr>
+                  <th>URL</th>
+                  <th>Result</th>
+                  <th>Risk level</th>
+                  <th>Confidence</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody"></tbody>
+            </table>
+          </div>
+          <div class="muted" id="historyHint"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    Statistics are computed locally from your browser history (no data sent to server).
+  </footer>
+
+  <script>
+    const body = document.body;
+    const themeToggleBtn = document.getElementById('themeToggle');
+
+    function applyTheme(theme) {
+      body.setAttribute('data-theme', theme);
+      localStorage.setItem('phishing_theme', theme);
+
+      if (theme === 'light') {
+        themeToggleBtn.textContent = '🌙 Dark mode';
+        themeToggleBtn.classList.remove('btn-outline-light');
+        themeToggleBtn.classList.add('btn-outline-dark');
+      } else {
+        themeToggleBtn.textContent = '☀ Light mode';
+        themeToggleBtn.classList.remove('btn-outline-dark');
+        themeToggleBtn.classList.add('btn-outline-light');
+      }
+    }
+
+    (function initTheme() {
+      const stored = localStorage.getItem('phishing_theme');
+      if (stored === 'light' || stored === 'dark') {
+        applyTheme(stored);
+      } else {
+        const prefersDark = window.matchMedia &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches;
+        applyTheme(prefersDark ? 'dark' : 'dark');
+      }
+    })();
+
+    themeToggleBtn.addEventListener('click', () => {
+      const current = body.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    });
+
+    // STATISTICS JS (uses same HISTORY_KEY as index.html)
+    const HISTORY_KEY = 'phishing_history';
+
+    const totalScansEl = document.getElementById('totalScans');
+    const phishingScansEl = document.getElementById('phishingScans');
+    const safeScansEl = document.getElementById('safeScans');
+    const lastScanTimeEl = document.getElementById('lastScanTime');
+    const phishingPercentEl = document.getElementById('phishingPercent');
+    const safePercentEl = document.getElementById('safePercent');
+    const totalLabelEl = document.getElementById('totalLabel');
+
+    const phishBar = document.getElementById('phishBar');
+    const safeBar = document.getElementById('safeBar');
+
+    const highCountEl = document.getElementById('highCount');
+    const mediumCountEl = document.getElementById('mediumCount');
+    const lowCountEl = document.getElementById('lowCount');
+    const highPercentEl = document.getElementById('highPercent');
+    const mediumPercentEl = document.getElementById('mediumPercent');
+    const lowPercentEl = document.getElementById('lowPercent');
+
+    const emptyState = document.getElementById('emptyState');
+    const statsContent = document.getElementById('statsContent');
+    const historyTbody = document.getElementById('historyTableBody');
+    const historyHint = document.getElementById('historyHint');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+    function loadHistory() {
+      try {
+        const raw = localStorage.getItem(HISTORY_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function formatTimestamp(ts) {
+      const d = new Date(ts);
+      if (Number.isNaN(d.getTime())) return '';
+      return d.toLocaleString(undefined, {
+        year: '2-digit',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function computeStats(list) {
+      const total = list.length;
+      let phish = 0;
+      let safe = 0;
+      let high = 0;
+      let med = 0;
+      let low = 0;
+      let lastTs = null;
+
+      list.forEach(item => {
+        if (item.is_phishing) phish++;
+        else safe++;
+
+        const rl = (item.risk_level || '').toLowerCase();
+        if (rl === 'high') high++;
+        else if (rl === 'medium') med++;
+        else low++;
+
+        if (typeof item.ts === 'number') {
+          if (lastTs === null || item.ts > lastTs) lastTs = item.ts;
+        }
+      });
+
+      const pct = (num) => total ? ((num / total) * 100).toFixed(1) + '%' : '0%';
+
+      return {
+        total,
+        phish,
+        safe,
+        high,
+        med,
+        low,
+        phishPct: pct(phish),
+        safePct: pct(safe),
+        highPct: pct(high),
+        medPct: pct(med),
+        lowPct: pct(low),
+        lastTs
+      };
+    }
+
+    function renderStats() {
+      const history = loadHistory();
+
+      if (!history.length) {
+        emptyState.style.display = 'block';
+        statsContent.style.display = 'none';
+        historyTbody.innerHTML = '';
+        historyHint.textContent = '';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      statsContent.style.display = 'block';
+
+      const stats = computeStats(history);
+
+      totalScansEl.textContent = stats.total;
+      phishingScansEl.textContent = stats.phish;
+      safeScansEl.textContent = stats.safe;
+      phishingPercentEl.textContent = stats.phishPct + ' of total marked as phishing';
+      safePercentEl.textContent = stats.safePct + ' of total marked as safe';
+      totalLabelEl.textContent = `${stats.total} scans`;
+
+      lastScanTimeEl.textContent = stats.lastTs
+        ? 'Last scan: ' + formatTimestamp(stats.lastTs)
+        : '';
+
+      phishBar.style.width = stats.phishPct;
+      safeBar.style.width = stats.safePct;
+
+      highCountEl.textContent = stats.high;
+      mediumCountEl.textContent = stats.med;
+      lowCountEl.textContent = stats.low;
+      highPercentEl.textContent = stats.highPct + ' of all scans';
+      mediumPercentEl.textContent = stats.medPct + ' of all scans';
+      lowPercentEl.textContent = stats.lowPct + ' of all scans';
+
+      // Recent 10
+      historyTbody.innerHTML = '';
+      history.slice(0, 10).forEach(item => {
+        const tr = document.createElement('tr');
+
+        const urlTd = document.createElement('td');
+        urlTd.textContent = item.url || '';
+
+        const resTd = document.createElement('td');
+        const badge = document.createElement('span');
+        badge.className = 'badge-small ' +
+          (item.is_phishing ? 'bg-danger text-white' : 'bg-success text-white');
+        badge.textContent = item.is_phishing ? 'Phishing' : 'Safe';
+        resTd.appendChild(badge);
+
+        const riskTd = document.createElement('td');
+        riskTd.textContent = item.risk_level || '';
+
+        const confTd = document.createElement('td');
+        confTd.textContent = typeof item.confidence === 'number'
+          ? (item.confidence * 100).toFixed(1) + '%'
+          : '';
+
+        const timeTd = document.createElement('td');
+        timeTd.textContent = formatTimestamp(item.ts);
+
+        tr.append(urlTd, resTd, riskTd, confTd, timeTd);
+        historyTbody.appendChild(tr);
+      });
+
+      historyHint.textContent = 'Note: Ye saare stats sirf isi browser / device ke local history par based hain.';
+    }
+
+    clearHistoryBtn.addEventListener('click', () => {
+      if (confirm('Clear all locally stored scan history?')) {
+        localStorage.removeItem(HISTORY_KEY);
+        renderStats();
+      }
+    });
+
+    renderStats();
+  </script>
 </body>
 </html>
