@@ -2,76 +2,393 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Phishing Awareness</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Phishing Awareness · Phishing Shield</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --bg-gradient-dark: radial-gradient(circle at top, #1f85ff 0, #050816 45%, #02010b 100%);
+      --bg-light: #f5f7fb;
+
+      --card-bg-dark: rgba(10, 15, 30, 0.9);
+      --card-bg-light: #ffffff;
+
+      --text-dark-main: #f8f9fa;
+      --text-dark-muted: #adb5bd;
+      --text-light-main: #212529;
+      --text-light-muted: #6c757d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    body[data-theme="dark"] {
+      background: var(--bg-gradient-dark);
+      color: var(--text-dark-main);
+    }
+    body[data-theme="light"] {
+      background: var(--bg-light);
+      color: var(--text-light-main);
+    }
+
+    .navbar {
+      backdrop-filter: blur(10px);
+      transition: background 0.25s ease, border-color 0.25s ease;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    body[data-theme="dark"] .navbar {
+      background: rgba(5, 10, 25, 0.95) !important;
+      border-bottom-color: rgba(255, 255, 255, 0.06);
+    }
+    body[data-theme="light"] .navbar {
+      background: rgba(255, 255, 255, 0.96) !important;
+      border-bottom-color: rgba(0, 0, 0, 0.07);
+    }
+
+    .navbar-brand {
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .logo-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: #20c997;
+      box-shadow: 0 0 12px rgba(32, 201, 151, 0.9);
+    }
+
+    .nav-link-simple {
+      font-size: 0.85rem;
+      text-decoration: none;
+      opacity: 0.85;
+    }
+    .nav-link-simple.active {
+      font-weight: 600;
+      opacity: 1;
+    }
+
+    #themeToggle {
+      font-size: 0.8rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+    }
+
+    .page-wrapper {
+      flex: 1;
+      padding: 3rem 1rem;
+    }
+
+    .content-card {
+      max-width: 1000px;
+      margin: 0 auto;
+      border-radius: 1.25rem;
+      padding: 2rem 1.75rem;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+      overflow: hidden;
+    }
+    body[data-theme="dark"] .content-card {
+      background: rgba(9, 12, 26, 0.96);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+    body[data-theme="light"] .content-card {
+      background: #ffffff;
+      border-color: rgba(0, 0, 0, 0.06);
+    }
+
+    .content-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at top left, rgba(13, 110, 253, 0.15), transparent 55%),
+        radial-gradient(circle at bottom right, rgba(32, 201, 151, 0.10), transparent 55%);
+      opacity: 0.8;
+    }
+
+    .content-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-header {
+      margin-bottom: 1.5rem;
+    }
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-subtitle {
+      font-size: 0.9rem;
+    }
+    body[data-theme="dark"] .section-subtitle {
+      color: var(--text-dark-muted);
+    }
+    body[data-theme="light"] .section-subtitle {
+      color: var(--text-light-muted);
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      margin-top: 1.75rem;
+      margin-bottom: 0.5rem;
+    }
+    p, li {
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      border-radius: 999px;
+      padding: 0.15rem 0.7rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      border: 1px solid rgba(108, 117, 125, 0.7);
+    }
+    body[data-theme="dark"] .chip {
+      color: var(--text-dark-muted);
+    }
+    body[data-theme="light"] .chip {
+      color: var(--text-light-muted);
+    }
+
+    .example-box {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8rem;
+      border-radius: 0.9rem;
+      padding: 0.75rem 0.9rem;
+      margin-top: 0.35rem;
+      margin-bottom: 0.5rem;
+      word-break: break-all;
+    }
+    body[data-theme="dark"] .example-box {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: #e9ecef;
+    }
+    body[data-theme="light"] .example-box {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      color: #212529;
+    }
+
+    .badge-good {
+      font-size: 0.75rem;
+      border-radius: 999px;
+      padding: 0.15rem 0.55rem;
+      background: rgba(25, 135, 84, 0.1);
+      color: #198754;
+      border: 1px solid rgba(25, 135, 84, 0.6);
+    }
+    .badge-bad {
+      font-size: 0.75rem;
+      border-radius: 999px;
+      padding: 0.15rem 0.55rem;
+      background: rgba(220, 53, 69, 0.08);
+      color: #dc3545;
+      border: 1px solid rgba(220, 53, 69, 0.6);
+    }
+
+    footer {
+      padding: 0.7rem 1.5rem 1rem;
+      font-size: 0.75rem;
+      text-align: center;
+    }
+    body[data-theme="dark"] footer { color: var(--text-dark-muted); }
+    body[data-theme="light"] footer { color: var(--text-light-muted); }
+
+    @media (max-width: 768px) {
+      .content-card {
+        padding: 1.5rem 1.25rem;
+      }
+    }
+  </style>
 </head>
-<body>
-    <div class="container mt-5">
-        <h1>Phishing Awareness Guide</h1>
-        
-        <div class="row mt-4">
-            <div class="col-md-6">
-                <div class="card mb-4">
-                    <div class="card-header bg-warning">
-                        <h5>What is Phishing?</h5>
-                    </div>
-                    <div class="card-body">
-                        <p>Phishing is a cybercrime where targets are contacted by email, 
-                        telephone or text message by someone posing as a legitimate institution.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6">
-                <div class="card mb-4">
-                    <div class="card-header bg-info">
-                        <h5>Protection Tips</h5>
-                    </div>
-                    <div class="card-body">
-                        <ul>
-                            {% for tip in tips %}
-                            <li>{{ tip }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="card">
-            <div class="card-header bg-danger text-white">
-                <h5>Common Phishing Signs</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4">
-                        <h6>URL Red Flags</h6>
-                        <ul>
-                            <li>Misspelled domain names</li>
-                            <li>Unusual subdomains</li>
-                            <li>IP addresses instead of domains</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-4">
-                        <h6>Content Red Flags</h6>
-                        <ul>
-                            <li>Urgent action required</li>
-                            <li>Grammar and spelling errors</li>
-                            <li>Requests for personal information</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-4">
-                        <h6>Technical Red Flags</h6>
-                        <ul>
-                            <li>No HTTPS encryption</li>
-                            <li>Suspicious attachments</li>
-                            <li>Unusual sender addresses</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
+<body data-theme="dark">
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <span class="logo-dot"></span>
+        Phishing Shield
+        <span class="ms-1 text-secondary" style="font-size: 0.8rem;">/ Awareness</span>
+      </a>
+
+      <div class="d-flex align-items-center ms-auto" style="gap: 0.75rem;">
+        <a href="/" class="nav-link-simple">Detector</a>
+        <a href="/awareness" class="nav-link-simple active">Awareness</a>
+        <a href="/statistics" class="nav-link-simple">Statistics</a>
+        <button id="themeToggle" class="btn btn-sm btn-outline-light">
+          ☀ Light mode
+        </button>
+      </div>
     </div>
+  </nav>
+
+  <main class="page-wrapper">
+    <section class="content-card">
+      <div class="content-inner">
+        <div class="section-header">
+          <div class="chip mb-2">
+            🎓 Awareness module
+          </div>
+          <div class="section-title">
+            Phishing ko samjho, click se pehle socho.
+          </div>
+          <div class="section-subtitle mt-1">
+            Ye page tumhe basic se lekar thoda advanced tak phishing attacks samjhaayega – taaki tum sirf tool par
+            nahi, apne judgement par bhi trust kar sako.
+          </div>
+        </div>
+
+        <h3>1. Phishing hota kya hai?</h3>
+        <p>
+          Phishing ek aisa attack hai jisme attacker tumse <strong>password, OTP, card details</strong> ya
+          sensitive info nikalne ki koshish karta hai – normally fake email, SMS, call ya website ke through.
+        </p>
+        <ul>
+          <li><strong>Goal:</strong> tumhara account ya paisa chura lena.</li>
+          <li><strong>Trick:</strong> genuine brand (bank, Big Tech, college, HR, etc.) ka naam use karke trust banana.</li>
+        </ul>
+
+        <h3>2. Common red flags (jaldi yaad rehne layak)</h3>
+        <ul>
+          <li><strong>Urgency / threat:</strong> “abhi verify nahi kiya to account block ho jayega”, “last warning”.</li>
+          <li><strong>Too good to be true:</strong> “aapne lottery jeeti hai”, “free gift / reward”.</li>
+          <li><strong>Weird sender:</strong> official brand ka naam lekin <code>@gmail.com</code> se aaya hua mail.</li>
+          <li><strong>Suspicious URL:</strong> original domain ka copy, jaise <code>paypa1.com</code> instead of <code>paypal.com</code>.</li>
+          <li><strong>Spelling / grammar mistakes:</strong> bahut jagah typos, odd capitalisation.</li>
+        </ul>
+
+        <h3>3. Safe vs fake URL – quick comparison</h3>
+
+        <p>
+          <span class="badge-good me-1">Safe example</span>
+        </p>
+        <div class="example-box">
+          https://accounts.google.com/signin
+        </div>
+
+        <p>
+          <span class="badge-bad me-1">Suspicious example</span>
+        </p>
+        <div class="example-box">
+          http://accounts-google-com-login-security-check-now.verify-session-center.com
+        </div>
+        <ul>
+          <li>Genuine domain: <code>google.com</code></li>
+          <li>Fake domain: last part <code>verify-session-center.com</code> hai, jo Google se unrelated hai.</li>
+          <li>Extra words jaise <em>login, secure, verify</em> phishing sites mein bahut common hote hain.</li>
+        </ul>
+
+        <h3>4. Types of phishing attacks</h3>
+        <ul>
+          <li><strong>Email phishing:</strong> fake mail with link/attachment – sabse common.</li>
+          <li><strong>Spear phishing:</strong> specifically tumhare naam / organisation ke hisaab se crafted mail.</li>
+          <li><strong>Smishing:</strong> SMS se phishing (delivery, KYC, electricity bill type messages).</li>
+          <li><strong>Vishing:</strong> phone call se social engineering (“main bank se bol raha hoon…”).</li>
+          <li><strong>Clone websites:</strong> original site jaisi hi copy bana ke credential steal karna.</li>
+        </ul>
+
+        <h3>5. URL verify karne ka 5-step checklist</h3>
+        <ol>
+          <li><strong>Domain ko isolate karo:</strong> last 2–3 parts dekho, jaise <code>something.bank.com</code> → main domain <code>bank.com</code>.</li>
+          <li><strong>HTTPS check:</strong> lock ka icon alone enough nahi hai, lekin <code>http://</code> + sensitive data = big NO.</li>
+          <li><strong>Spelling:</strong> extra letters, numbers, ya hyphens detect karo (<code>faceb00k-security.com</code>).</li>
+          <li><strong>Short URLs:</strong> bit.ly / tinyurl links ko direct click mat karo – pehle preview / expand karo.</li>
+          <li><strong>Context:</strong> socho kya tumne ye request initiate ki thi? Agar nahi, doubt karo.</li>
+        </ol>
+
+        <h3>6. Best practices – rozana life ke liye</h3>
+        <ul>
+          <li>Unknown email ya SMS me se aane wale links par <strong>direct click mat karo</strong>.</li>
+          <li>Account login ke liye hamesha URL <strong>khud manually type karo</strong> ya official app use karo.</li>
+          <li>OTP / PIN / password kisi ko call pe ya chat pe <strong>kabhi mat batao</strong> – bank bhi nahi maangta.</li>
+          <li>2FA (two-factor auth) enable rakho – phishing successful ho jaye to bhi extra security layer bachi rahe.</li>
+          <li>Doubt ho to link ko is tool me daal ke risk indicator dekh sakte ho, lekin final decision tumhara hoga.</li>
+        </ul>
+
+        <h3>7. Ye tool tumhe kaise help karega?</h3>
+        <p>
+          <strong>Phishing Shield</strong> model kuch technical features analyse karta hai jaise URL length, digits, symbols,
+          domain pattern, etc., aur tumhe ek <strong>risk level + confidence score</strong> deta hai.
+        </p>
+        <ul>
+          <li>Training / awareness ke liye: tum random suspicious URLs daal ke dekh sakte ho ki model kya bolta hai.</li>
+          <li>Demo / workshop ke liye: is page ka content theory cover karega, aur detector practical demo dega.</li>
+        </ul>
+
+        <p class="mt-3" style="font-size:0.82rem; opacity:0.8;">
+          Note: Ye tool academic / awareness purpose ke liye design kiya gaya hai. Critical production environments me
+          hammesha multi-layer security (email gateway, endpoint protection, SOC monitoring) use karein.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Phishing Shield · Awareness module · Use for training and demonstrations.
+  </footer>
+
+  <script>
+    const body = document.body;
+    const themeToggleBtn = document.getElementById('themeToggle');
+
+    function applyTheme(theme) {
+      body.setAttribute('data-theme', theme);
+      localStorage.setItem('phishing_theme', theme);
+
+      if (theme === 'light') {
+        themeToggleBtn.textContent = '🌙 Dark mode';
+        themeToggleBtn.classList.remove('btn-outline-light');
+        themeToggleBtn.classList.add('btn-outline-dark');
+      } else {
+        themeToggleBtn.textContent = '☀ Light mode';
+        themeToggleBtn.classList.remove('btn-outline-dark');
+        themeToggleBtn.classList.add('btn-outline-light');
+      }
+    }
+
+    (function initTheme() {
+      const stored = localStorage.getItem('phishing_theme');
+      if (stored === 'light' || stored === 'dark') {
+        applyTheme(stored);
+      } else {
+        const prefersDark = window.matchMedia &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches;
+        applyTheme(prefersDark ? 'dark' : 'dark');
+      }
+    })();
+
+    themeToggleBtn.addEventListener('click', () => {
+      const current = body.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    });
+  </script>
 </body>
 </html>
