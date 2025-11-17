@@ -648,7 +648,7 @@
 </head>
 <body data-theme="dark">
   <!-- Top navbar -->
-  <nav class="navbar navbar-expand-lg">
+  <!-- <nav class="navbar navbar-expand-lg">
     <div class="container">
       <a class="navbar-brand" href="/">
         <span class="logo-dot"></span>
@@ -665,7 +665,40 @@
         </button>
       </div>
     </div>
-  </nav>
+  </nav> -->
+  <nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="{{ url_for('index') }}">
+      <span class="logo-dot"></span>
+      Phishing Shield
+      <span class="ms-1 text-secondary" style="font-size: 0.8rem;">/ URL Intel</span>
+    </a>
+
+    <div class="d-flex align-items-center ms-auto" style="gap: 1rem;">
+
+      <!-- Detector (home) -->
+      <a href="{{ url_for('index') }}" class="nav-link text-light" style="text-decoration:none;">
+        Detector
+      </a>
+
+      <!-- Awareness page -->
+      <a href="{{ url_for('awareness') }}" class="nav-link text-light" style="text-decoration:none;">
+        Awareness
+      </a>
+
+      <!-- Statistics page -->
+      <a href="{{ url_for('statistics') }}" class="nav-link text-light" style="text-decoration:none;">
+        Statistics
+      </a>
+
+      <!-- Dark / Light toggle -->
+      <button id="themeToggle" class="btn btn-sm btn-outline-light">
+        ☀ Light mode
+      </button>
+    </div>
+  </div>
+</nav>
+
 
   <!-- Main content -->
   <div class="container hero-wrapper">
